@@ -59,7 +59,7 @@ jobs:
           # 3. Read it using standard shell syntax or GitHub context
           echo "The saved version is: ${{ secrets.PY_VER }}"
 
-
+      # Trivy Scan
       - name: Run Trivy Filesystem Scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
