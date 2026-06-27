@@ -9,6 +9,7 @@ on:
       - "app/**"
       - "tests/**"
       - ".github/workflows/02-ci.yml"
+      - "Dockerfile"
   # Allow a safe manual run before students trigger it with a code change.
   workflow_dispatch:
   
@@ -40,7 +41,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       # Trivy Filesystem Scan
-      - name: Run Trivy Filesystem Scan
+      - name: Run Trivy Filesystem
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: fs
@@ -51,7 +52,7 @@ jobs:
 
 
       # Trivy Dockerfile Scan
-      - name: Run Trivy Dockerfile Scan
+      - name: Run Trivy Dockerfile
         uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: config
