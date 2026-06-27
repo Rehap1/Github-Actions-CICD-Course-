@@ -18,4 +18,4 @@ jobs:
     steps:
       - name: Say hello
         # This single step is enough to show a full workflow run.
-        run: echo "Hello from GitHub Actions and from Rehab"
+        run: echo "Hello from GitHub Actions and from Rehabb"
