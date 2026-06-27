@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Reference view of a failed workflow step</title>
+  <desc id="desc">Simplified workflow run page showing the workflow name, the failed step, and the first useful error.</desc>
+  <rect width="1200" height="760" fill="#f6f8fa"/>
+  <rect x="50" y="30" width="1100" height="700" rx="16" fill="#ffffff" stroke="#d0d7de"/>
+  <rect x="50" y="30" width="1100" height="72" rx="16" fill="#24292f"/>
+  <text x="85" y="75" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Workflow run</text>
+  <text x="90" y="140" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">1. Workflow name</text>
+  <rect x="90" y="160" width="430" height="52" rx="10" fill="#ddf4ff" stroke="#0969da"/>
+  <text x="118" y="194" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">02 CI Workflow</text>
+  <text x="90" y="260" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">2. Failed step</text>
+  <rect x="90" y="282" width="430" height="52" rx="10" fill="#ffebe9" stroke="#cf222e"/>
+  <text x="118" y="316" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">Run tests</text>
+  <text x="90" y="382" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">3. First useful error</text>
+  <rect x="90" y="408" width="1000" height="180" rx="12" fill="#0d1117"/>
+  <text x="120" y="455" fill="#f0f6fc" font-family="Courier New, monospace" font-size="24">FAILED: test_health_route_returns_ok_payload</text>
+  <text x="120" y="495" fill="#ff7b72" font-family="Courier New, monospace" font-size="22">AssertionError: {'status': 'ready'} != {'status': 'ok'}</text>
+  <text x="120" y="535" fill="#8b949e" font-family="Courier New, monospace" font-size="22">Read this line first before changing more files.</text>
+  <rect x="90" y="620" width="1000" height="70" rx="16" fill="#fff8c5" stroke="#d4a72c"/>
+  <text x="120" y="663" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">Reading order: workflow result -> failed job -> failed step -> first useful error</text>
+</svg>

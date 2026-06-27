@@ -1,0 +1,79 @@
+# This workflow checks whether the final assessment setup is ready.
+# It does not build or deploy the final solution.
+name: 07 Final Assessment Readiness Workflow
+
+on:
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: tiny-health-app
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  check-registry-access:
+    needs: verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check required GitHub secrets
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+        run: |
+          missing_secret=0
+          for required in DOCKERHUB_USERNAME DOCKERHUB_TOKEN VM_HOST VM_USER VM_SSH_KEY; do
+            if [ -z "${!required}" ]; then
+              echo "Missing required GitHub secret: ${required}"
+              missing_secret=1
+            fi
+          done
+
+          if [ "${missing_secret}" -eq 1 ]; then
+            exit 1
+          fi
+
+          echo "All required GitHub secrets are present."
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Show expected image repository
+        run: 'echo "Expected assessment image repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"'
+
+  check-vm-readiness:
+    needs: check-registry-access
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Ubuntu VM readiness over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            docker --version
+            curl --version
+            docker ps
+            echo "VM readiness check passed."

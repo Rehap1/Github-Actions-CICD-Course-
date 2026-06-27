@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">Reference view of the GitHub template button</title>
+  <desc id="desc">Simplified GitHub repository page with the Use this template button highlighted.</desc>
+  <rect width="1200" height="700" fill="#f6f8fa"/>
+  <rect x="60" y="40" width="1080" height="620" rx="16" fill="#ffffff" stroke="#d0d7de"/>
+  <rect x="60" y="40" width="1080" height="72" rx="16" fill="#24292f"/>
+  <text x="95" y="85" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">github.com / your-course-template-repo</text>
+  <text x="95" y="150" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">Repository main page</text>
+  <rect x="95" y="190" width="250" height="42" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="118" y="218" fill="#57606a" font-family="Arial, Helvetica, sans-serif" font-size="20">Code</text>
+  <rect x="360" y="190" width="160" height="42" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="384" y="218" fill="#57606a" font-family="Arial, Helvetica, sans-serif" font-size="20">Actions</text>
+  <rect x="865" y="145" width="190" height="52" rx="10" fill="#2da44e"/>
+  <text x="894" y="178" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Use this template</text>
+  <rect x="760" y="122" width="350" height="100" rx="18" fill="none" stroke="#cf222e" stroke-width="6"/>
+  <path d="M690 250 C740 210, 790 190, 845 170" fill="none" stroke="#cf222e" stroke-width="6"/>
+  <polygon points="842,156 870,165 850,186" fill="#cf222e"/>
+  <rect x="90" y="500" width="1020" height="120" rx="16" fill="#fff8c5" stroke="#d4a72c"/>
+  <text x="120" y="545" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">What students should do</text>
+  <text x="120" y="583" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">1. Open the repository main page</text>
+  <text x="520" y="583" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">2. Click "Use this template"</text>
+  <text x="120" y="615" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">3. Choose "Create a new repository"</text>
+</svg>

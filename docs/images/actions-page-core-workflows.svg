@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Reference view of the Actions page</title>
+  <desc id="desc">Simplified GitHub Actions page with the four core workflows highlighted and optional examples clearly separated.</desc>
+  <rect width="1200" height="760" fill="#f6f8fa"/>
+  <rect x="50" y="30" width="1100" height="700" rx="16" fill="#ffffff" stroke="#d0d7de"/>
+  <rect x="50" y="30" width="1100" height="72" rx="16" fill="#24292f"/>
+  <text x="85" y="75" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Actions</text>
+  <text x="90" y="140" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Core workflows to open first</text>
+  <rect x="90" y="170" width="620" height="58" rx="10" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="118" y="206" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">01 Hello Workflow</text>
+  <rect x="90" y="242" width="620" height="58" rx="10" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="118" y="278" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">02 CI Workflow</text>
+  <rect x="90" y="314" width="620" height="58" rx="10" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="118" y="350" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">03 Build Artifact Workflow</text>
+  <rect x="90" y="386" width="620" height="58" rx="10" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="118" y="422" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24">04 Deploy Workflow</text>
+  <text x="770" y="140" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Later items</text>
+  <rect x="760" y="170" width="330" height="58" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="786" y="206" fill="#57606a" font-family="Arial, Helvetica, sans-serif" font-size="22">90 OPTIONAL Full Containerized</text>
+  <rect x="760" y="242" width="330" height="58" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="786" y="278" fill="#57606a" font-family="Arial, Helvetica, sans-serif" font-size="22">91 OPTIONAL Azure Example</text>
+  <rect x="760" y="314" width="330" height="58" rx="10" fill="#fff8c5" stroke="#d4a72c"/>
+  <text x="786" y="350" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">07 Final Assessment Readiness</text>
+  <rect x="90" y="520" width="1000" height="150" rx="18" fill="#fff8c5" stroke="#d4a72c"/>
+  <text x="120" y="565" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Quick reading rule</text>
+  <text x="120" y="603" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">Start of course: open only 01, 02, 03, and 04.</text>
+  <text x="120" y="635" fill="#24292f" font-family="Arial, Helvetica, sans-serif" font-size="22">Most exercises later keep modifying these same workflow files.</text>
+</svg>
