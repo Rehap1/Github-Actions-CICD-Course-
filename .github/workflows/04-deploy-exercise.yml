@@ -1,0 +1,59 @@
+# This reference workflow keeps the build and run steps on the same runner.
+# It is still useful if the instructor wants to isolate Docker ARG first.
+name: 98 OPTIONAL Reference - Build and Run With Docker ARG
+
+on:
+  # Run automatically when app code, tests, or this workflow file changes.
+  push:
+    paths:
+      - "app/**"
+      - "tests/**"
+      - ".github/workflows/04-deploy-exercise.yml"
+
+env:
+  IMAGE_NAME: tiny-health-app-arg
+  CONTAINER_NAME: tiny-health-container-arg
+  APP_PORT: "8000"
+  BASE_IMAGE: python:3.12-slim
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker image with base-image ARG
+        run: |
+          docker build \
+            -f Dockerfile.arg-base \
+            --build-arg BASE_IMAGE="${BASE_IMAGE}" \
+            -t "${IMAGE_NAME}:arg-base" \
+            .
+
+      - name: Start container
+        run: |
+          docker run -d \
+            --name "${CONTAINER_NAME}" \
+            -p "${APP_PORT}:8000" \
+            "${IMAGE_NAME}:arg-base"
+
+      - name: Wait for app to become ready
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent "http://127.0.0.1:${APP_PORT}/health" > /dev/null; then
+              exit 0
+            fi
+            echo "Waiting for app to become ready..."
+            sleep 2
+          done
+          echo "App did not become ready in time."
+          exit 1
+
+      - name: Show health response
+        run: curl --silent "http://127.0.0.1:${APP_PORT}/health"
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f "${CONTAINER_NAME}" || true

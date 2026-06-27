@@ -1,0 +1,74 @@
+# This is an optional Buildx-based version of the build artifact workflow.
+# It keeps the same course story:
+# 1. verify
+# 2. package
+# 3. save the package as an artifact
+name: 93 OPTIONAL Build Artifact Exercise Workflow (Buildx)
+
+on:
+  # Keep this exercise manual-only so it stays outside the core lab path.
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: tiny-health-app
+  IMAGE_TAR: tiny-health-app-buildx.tar
+  ARTIFACT_NAME: tiny-health-app-buildx-image
+
+jobs:
+  build-package:
+    # Use a fresh runner so the Buildx flow is easy to reason about.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        # Bring the repository files onto the runner.
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        # Prepare Python before the test step.
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        # Keep the same verification-first story as the core build workflow.
+        run: python -m unittest discover -s tests -v
+
+      - name: Set image tag
+        # Create one traceable tag for this workflow run.
+        id: image-tag
+        run: |
+          IMAGE_TAG="run-${GITHUB_RUN_NUMBER}"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        # Buildx prepares the Docker build tool we want to use in the next step.
+        # Think of this as: "get the runner ready to build images with the Buildx action."
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build tagged image and export tar artifact with Buildx
+        # docker/build-push-action is a reusable Docker build step.
+        # In simple words, this one step does the work that a raw docker command would do for us:
+        # - build the image from the Dockerfile
+        # - attach the tag we want
+        # - export the built image as a tar file
+        #
+        # These inputs are the important ones for this course:
+        # - context: build from this repository folder
+        # - push: false means do not send the image to a registry
+        # - tags: name the image clearly for this run
+        # - outputs: save the built image as a tar file we can upload as an artifact
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.image-tag.outputs.image_tag }}
+          outputs: type=docker,dest=${{ runner.temp }}/${{ env.IMAGE_TAR }}
+
+      - name: Upload build artifact
+        # Save the image tar file in GitHub Actions so another workflow or person can download it later.
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/${{ env.IMAGE_TAR }}
+          retention-days: 7

@@ -1,0 +1,67 @@
+# This workflow completes the story by delivering the saved package.
+# It starts after the build workflow finishes successfully.
+name: 04 Deploy Workflow
+
+on:
+  workflow_run:
+    # Listen for the build workflow by name.
+    workflows: ["03 Build Artifact Workflow"]
+    # Start when the build workflow has completed.
+    types: [completed]
+
+permissions:
+  # Read access is enough because this workflow only downloads artifacts and reads repo data.
+  actions: read
+  contents: read
+
+jobs:
+  deploy-package:
+    # Continue only when the build workflow succeeded.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Use a fresh runner for the deployment simulation.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifact
+        # Download the exact artifact produced by the build run.
+        uses: actions/download-artifact@v8
+        with:
+          name: tiny-health-app-image
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: downloaded-artifact
+
+      - name: Show downloaded files
+        # Quick visibility step so students can see what arrived from the build.
+        run: ls -R downloaded-artifact
+
+      - name: Load Docker image
+        # Turn the saved artifact file back into a Docker image.
+        run: docker load --input downloaded-artifact/tiny-health-app.tar
+
+      - name: Start container
+        # Start the exact same tagged image that the build workflow created.
+        run: |
+          docker run -d \
+            --name tiny-health-container \
+            -p 8000:8000 \
+            "tiny-health-app:run-${{ github.event.workflow_run.run_number }}"
+
+      - name: Smoke test deployed app
+        # Retry a few times because app startup can take a moment.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            echo "Waiting for app to become ready..."
+            sleep 2
+          done
+          echo "App did not become ready in time."
+          exit 1
+
+      - name: Stop container
+        if: always()
+        # Clean up even if an earlier step fails.
+        run: docker rm -f tiny-health-container || true

@@ -1,0 +1,108 @@
+# This optional workflow shows a fuller CI/CD shape in one file.
+# It stays beginner-safe by keeping containerization real but deployment simulated.
+name: 90 OPTIONAL Full Containerized CI/CD Workflow
+
+on:
+  # Keep this optional example manual-only so it does not distract from the core labs.
+  workflow_dispatch:
+
+env:
+  # These values keep the workflow easier to read and update.
+  IMAGE_NAME: tiny-health-app
+  IMAGE_TAR: tiny-health-app-full.tar
+  ARTIFACT_NAME: tiny-health-app-full-image
+  APP_PORT: "8000"
+
+jobs:
+  verify:
+    # Verification stays first because CI should prove the change is safe.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  build-container:
+    # Build only after the verification job succeeds.
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.image-tag.outputs.image_tag }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set image tag
+        # Create one simple tag so the build and deploy jobs can refer to the same image.
+        id: image-tag
+        run: |
+          IMAGE_TAG="run-${GITHUB_RUN_NUMBER}"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image with docker build
+        # This workflow uses plain docker build first because it is easier to read.
+        # We add a traceable tag and a latest tag to the same image.
+        run: |
+          docker build \
+            -t "${IMAGE_NAME}:${{ steps.image-tag.outputs.image_tag }}" \
+            -t "${IMAGE_NAME}:latest" \
+            .
+
+      - name: Save Docker image as artifact file
+        # Save the built image so the deploy job uses the same package.
+        run: docker save "${IMAGE_NAME}:${{ steps.image-tag.outputs.image_tag }}" -o "${IMAGE_TAR}"
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.IMAGE_TAR }}
+          retention-days: 7
+
+  deploy-simulated:
+    # Deliver the same image artifact after the build job succeeds.
+    needs: build-container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: downloaded-image
+
+      - name: Load Docker image
+        run: docker load --input "downloaded-image/${IMAGE_TAR}"
+
+      - name: Start container from built image
+        run: |
+          docker run -d \
+            --name tiny-health-container-full \
+            -p "${APP_PORT}:${APP_PORT}" \
+            "${IMAGE_NAME}:${{ needs.build-container.outputs.image_tag }}"
+
+      - name: Smoke test containerized app
+        # Retry because application startup can take a moment.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent "http://127.0.0.1:${APP_PORT}/health"; then
+              exit 0
+            fi
+            echo "Waiting for containerized app to become ready..."
+            sleep 2
+          done
+          echo "Containerized app did not become ready in time."
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f tiny-health-container-full || true

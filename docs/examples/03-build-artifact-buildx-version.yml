@@ -1,0 +1,58 @@
+# This is an optional Buildx-based version of the build artifact workflow.
+# It keeps the same course story:
+# 1. verify
+# 2. package
+# 3. save the package as an artifact
+name: 92 OPTIONAL Build Artifact Workflow (Buildx Version)
+
+on:
+  # Keep this version manual-only so it stays outside the core lab path.
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: tiny-health-app
+  IMAGE_TAR: tiny-health-app-buildx.tar
+  ARTIFACT_NAME: tiny-health-app-buildx-image
+
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Set image tag
+        id: image-tag
+        run: |
+          IMAGE_TAG="run-${GITHUB_RUN_NUMBER}"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        # Buildx gives us a reusable action-based build flow instead of raw docker build.
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build tagged image and export tar artifact with Buildx
+        # docker/build-push-action can export a Docker image tarball directly.
+        # That lets us upload the packaged output as a normal GitHub artifact.
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.image-tag.outputs.image_tag }}
+          outputs: type=docker,dest=${{ runner.temp }}/${{ env.IMAGE_TAR }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/${{ env.IMAGE_TAR }}
+          retention-days: 7
