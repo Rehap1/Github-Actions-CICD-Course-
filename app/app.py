@@ -61,7 +61,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
 def run():
     server = HTTPServer(("0.0.0.0", 8000), AppHandler)
-    print("Server running on http://0.0.0.0:8000")
+    print("Server is running on http://0.0.0.0:8000")
     server.serve_forever()
 
 
