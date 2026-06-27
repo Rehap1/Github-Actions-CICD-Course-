@@ -20,6 +20,9 @@ jobs:
     # The runner is the temporary machine that executes the steps below.
     runs-on: ubuntu-latest
 
+    env:
+      PYTHON_VERSION: "3.12"
+
     steps:
       - name: Check out repository
         # Download the repository contents onto the runner.
@@ -29,7 +32,7 @@ jobs:
         # Prepare Python on the runner. This does not change the student laptop.
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run tests
         # This is the key verification step in the CI workflow.
