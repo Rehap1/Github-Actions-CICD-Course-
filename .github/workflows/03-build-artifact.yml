@@ -33,7 +33,7 @@ jobs:
         # Build only after the verification step passes.
         run: python -m unittest discover -s tests -v
 
-      - name: Set image tag
+      - name: Set docker image tag
         # Use today's UTC date plus the GitHub run ID.
         # This keeps the tag easy to explain and still unique for the run.
         id: image-tag
