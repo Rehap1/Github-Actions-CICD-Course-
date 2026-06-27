@@ -18,13 +18,14 @@ on:
 jobs:
   run-tests:
     # The runner is the temporary machine that executes the steps below.
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     # env:
     #   PYTHON_VERSION: ${{ secrets.PYTHON_VERSION }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.11", "3.12"]
 
     steps:
