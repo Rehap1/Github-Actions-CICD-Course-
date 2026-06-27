@@ -34,11 +34,11 @@ jobs:
 
       - name: Check Time, List Files and Verify Python
         run: |
-        echo "=== Checking Runner System Time (UTC) ==="
-        date
+          echo "=== Checking Runner System Time (UTC) ==="
+          date
         
-        echo "=== Checking Python Version ==="
-        python --version
+          echo "=== Checking Python Version ==="
+          python --version
         
-        echo "=== Listing Repository Files ==="
-        ls -la
+          echo "=== Listing Repository Files ==="
+          ls -la
