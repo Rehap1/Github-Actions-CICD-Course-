@@ -3,33 +3,37 @@
 name: 02 CI Workflow
 
 on:
+  schedule:
+    # Runs every day at 09:20 UTC
+    - cron: '20 9 * * *'
   # Run automatically when app code, tests, or this workflow file changes.
   push:
     paths:
       - "app/**"
       - "tests/**"
       - ".github/workflows/02-ci.yml"
-      - "Dockerfile"
   # Allow a safe manual run before students trigger it with a code change.
   workflow_dispatch:
-  
-  schedule:
-    - cron: "*/5 * * * *"   
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
   run-tests:
     # The runner is the temporary machine that executes the steps below.
-    runs-on: ${{ matrix.os }}
+    # runs-on: ubuntu-latest
 
-    # env:
-    #   PYTHON_VERSION: ${{ secrets.PYTHON_VERSION }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ["3.11", "3.12"]
 
+
     steps:
+    # first step
       - name: Check out repository
         # Download the repository contents onto the runner.
         uses: actions/checkout@v6
@@ -40,38 +44,43 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Trivy Filesystem Scan
-      - name: Run Trivy Filesystem
-        uses: aquasecurity/trivy-action@master
+      # - name: Print Python Version
+      #   run: python --version
+      - name: Get and Save Python Version
+        run: |
+          # 1. Get the version string (e.g., "Python 3.11.5")
+          PY_VER=$(python --version)
+          
+          # 2. Save it to the GitHub Environment file
+          echo "MY_PYTHON_VERSION=$PY_VER" >> $GITHUB_ENV
+
+      - name: Print the Saved Environment Variable
+        run: |
+          # 3. Read it using standard shell syntax or GitHub context
+          echo "The saved version is: ${{ secrets.PY_VER }}"
+
+
+      - name: Run Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: fs
           scan-ref: .
           format: table
           exit-code: 1
-          severity: HIGH,CRITICAL
+          severity: CRITICAL,HIGH
 
-
-      # Trivy Dockerfile Scan
-      - name: Run Trivy Dockerfile
+      - name: Run Trivy Dockerfile Scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: config
-          scan-ref: "Dockerfile"
-          format: table
-          exit-code: 1
-          severity: HIGH,CRITICAL
+          scan-type: 'config'
+          scan-ref: 'Dockerfile' # Path to your Dockerfile
+          format: 'table'
+          exit-code: '1' # Fails the build if issues are found
+          severity: 'HIGH,CRITICAL'
+
+      - name: Check current time
+        run: date
 
       - name: Run tests
         # This is the key verification step in the CI workflow.
         run: python -m unittest discover -s tests -v
-
-      - name: Check Time, List Files and Verify Python
-        run: |
-          echo "=== Checking Runner System Time (UTC) ==="
-          date
-        
-          echo "=== Checking Python Version ==="
-          python --version
-        
-          echo "=== Listing Repository Files ==="
-          ls -la
