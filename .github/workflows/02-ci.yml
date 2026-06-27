@@ -11,6 +11,9 @@ on:
       - ".github/workflows/02-ci.yml"
   # Allow a safe manual run before students trigger it with a code change.
   workflow_dispatch:
+  
+  schedule:
+    - cron: "0 * * * *"   # Every hour
 
 jobs:
   run-tests:
