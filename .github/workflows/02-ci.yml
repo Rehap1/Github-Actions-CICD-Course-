@@ -39,6 +39,27 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Trivy Filesystem Scan
+      - name: Run Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
+
+
+      # Trivy Dockerfile Scan
+      - name: Run Trivy Dockerfile Scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: .
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
+
       - name: Run tests
         # This is the key verification step in the CI workflow.
         run: python -m unittest discover -s tests -v
