@@ -42,7 +42,7 @@ jobs:
 
       # Trivy Filesystem Scan
       - name: Run Trivy Filesystem
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.1
         with:
           scan-type: fs
           scan-ref: .
@@ -53,7 +53,7 @@ jobs:
 
       # Trivy Dockerfile Scan
       - name: Run Trivy Dockerfile
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.1
         with:
           scan-type: config
           scan-ref: .
