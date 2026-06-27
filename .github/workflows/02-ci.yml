@@ -31,3 +31,14 @@ jobs:
       - name: Run tests
         # This is the key verification step in the CI workflow.
         run: python -m unittest discover -s tests -v
+
+      - name: Check Time, List Files and Verify Python
+        run: |
+        echo "=== Checking Runner System Time (UTC) ==="
+        date
+        
+        echo "=== Checking Python Version ==="
+        python --version
+        
+        echo "=== Listing Repository Files ==="
+        ls -la
