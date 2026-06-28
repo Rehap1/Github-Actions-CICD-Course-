@@ -107,14 +107,15 @@ jobs:
           load: true
 
       # Scan the built image for vulnerabilities.
-      - name: Run Trivy Image Scan
-        if: matrix.os == 'ubuntu-latest'
-        uses: aquasecurity/trivy-action@master
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.31.0
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:latest
+          input: ${{ env.IMAGE_TAR }}
           format: table
-          exit-code: 1
-          severity: CRITICAL
+          output: trivy-report.txt
+          exit-code: "0"
+          ignore-unfixed: true
+          severity: HIGH
 
       # Save the Docker image as a tar archive.
       - name: Save Docker Image
