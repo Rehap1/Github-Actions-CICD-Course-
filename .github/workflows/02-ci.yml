@@ -106,6 +106,13 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:latest
           load: true
 
+
+      # Save the Docker image as a tar archive.
+      - name: Save Docker Image
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
+
       # Scan the built image for vulnerabilities.
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -116,12 +123,6 @@ jobs:
           exit-code: "0"
           ignore-unfixed: true
           severity: HIGH
-
-      # Save the Docker image as a tar archive.
-      - name: Save Docker Image
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
 
       # # Upload the Docker image as a workflow artifact.
       # - name: Upload Docker Image Artifact
