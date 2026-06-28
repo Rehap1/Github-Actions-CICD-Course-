@@ -1,6 +1,6 @@
 # This is the first real CI workflow in the course.
-# It verifies the code, builds a Docker image,
-# scans it, runs the container, and publishes the image artifact.
+# It verifies a change by running tests, building a Docker image,
+# scanning it with Trivy, and publishing it as an artifact.
 name: 02 CI Workflow
 
 on:
@@ -19,7 +19,6 @@ on:
 env:
   IMAGE_NAME: tiny-health-app
   IMAGE_TAR: tiny-health-app.tar
-  CONTAINER_NAME: tiny-health-app
 
 jobs:
   run-tests:
@@ -53,7 +52,7 @@ jobs:
           scan-type: fs
           scan-ref: .
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
       - name: Run Trivy Dockerfile Scan
@@ -62,30 +61,41 @@ jobs:
           scan-type: config
           scan-ref: Dockerfile
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
       - name: Run Tests
         run: python -m unittest discover -s tests -v
 
-      - name: Check Runner Information
+      - name: Check Time, List Files and Verify Python
         run: |
+          echo "=== Checking Runner System Time (UTC) ==="
           date
+
+          echo "=== Checking Python Version ==="
           python --version
+
+          echo "=== Listing Repository Files ==="
           ls -la
 
       ####################################################################
-      # Docker (Ubuntu only)
+      # Docker steps (Ubuntu only)
       ####################################################################
+
+      - name: Set up Docker Buildx
+        if: matrix.os == 'ubuntu-latest'
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Image
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker build \
-            -t ${{ env.IMAGE_NAME }}:latest \
-            .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:latest
+          load: true
 
-      - name: Scan Docker Image
+      - name: Scan Docker Image with Trivy
         if: matrix.os == 'ubuntu-latest'
         uses: aquasecurity/trivy-action@master
         with:
@@ -96,38 +106,10 @@ jobs:
           ignore-unfixed: true
           severity: HIGH
 
-      - name: Run Docker Container
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker run -d \
-            --name ${{ env.CONTAINER_NAME }} \
-            -p 8000:8000 \
-            ${{ env.IMAGE_NAME }}:latest
-
-      - name: Wait for Container
-        if: matrix.os == 'ubuntu-latest'
-        run: sleep 10
-
-      - name: Verify Running Containers
-        if: matrix.os == 'ubuntu-latest'
-        run: docker ps
-
-      - name: Check Container Logs
-        if: failure() && matrix.os == 'ubuntu-latest'
-        run: docker logs ${{ env.CONTAINER_NAME }}
-
       - name: Save Docker Image
         if: matrix.os == 'ubuntu-latest'
         run: |
-          docker save \
-            ${{ env.IMAGE_NAME }}:latest \
-            -o ${{ env.IMAGE_TAR }}
-
-      - name: Stop and Remove Container
-        if: always() && matrix.os == 'ubuntu-latest'
-        run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
+          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
 
       - name: Upload Docker Image Artifact
         if: matrix.os == 'ubuntu-latest'

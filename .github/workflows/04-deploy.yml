@@ -5,7 +5,7 @@ name: 04 Deploy Workflow
 on:
   workflow_run:
     # Listen for the build workflow by name.
-    workflows: ["03 Build Artifact Workflow"]
+    workflows: ["02 CI Workflow"]
     # Start when the build workflow has completed.
     types: [completed]
 
