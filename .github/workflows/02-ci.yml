@@ -1,10 +1,18 @@
-# This is the first real CI workflow in the course.
-# It verifies a change by running tests, building a Docker image,
-# scanning it with Trivy, and publishing it as an artifact.
 name: 02 CI Workflow
 
 on:
-  push:
+  # push:
+  #   paths:
+  #     - "app/**"
+  #     - "tests/**"
+  #     - ".github/workflows/02-ci.yml"
+  #     - "Dockerfile"
+
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths:
       - "app/**"
       - "tests/**"
@@ -19,6 +27,7 @@ on:
 env:
   IMAGE_NAME: tiny-health-app
   IMAGE_TAR: tiny-health-app.tar
+  name: tiny-health-app-image
 
 jobs:
   run-tests:
