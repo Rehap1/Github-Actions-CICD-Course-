@@ -54,6 +54,15 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:${{ steps.image-tag.outputs.image_tag }}
           outputs: type=docker,dest=${{ env.IMAGE_TAR }}
 
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.31.0
+        with:
+          input: ${{ env.IMAGE_TAR }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: HIGH
+
       - name: Save image metadata
         # Keep the exact built image reference alongside the tar file.
         # The deploy workflow reads this file later instead of recreating the tag.

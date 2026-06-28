@@ -3,19 +3,23 @@
 name: 01 Hello Workflow
 
 on:
-  # Run automatically when this workflow file changes.
+  # Run automatically when a PR to main is closed.
   pull_request:
     branches:
       - main
     types:
       - closed
+
+  # Allow running manually.
   workflow_dispatch:
 
 jobs:
   say-hello:
-    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    # Only run automatically if the PR was merged.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
 
     steps:
       - name: Say hello
-        # This single step is enough to show a full workflow run.
         run: echo "Hello from GitHub Actions and from Rehabb"
