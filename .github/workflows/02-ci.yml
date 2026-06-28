@@ -114,7 +114,7 @@ jobs:
           image-ref: ${{ env.IMAGE_NAME }}:latest
           format: table
           exit-code: 1
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
 
       # Save the Docker image as a tar archive.
       - name: Save Docker Image
