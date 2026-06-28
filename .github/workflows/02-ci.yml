@@ -4,7 +4,6 @@
 name: 02 CI Workflow
 
 on:
-  # Run automatically when app code, tests, or this workflow file changes.
   push:
     paths:
       - "app/**"
@@ -12,10 +11,8 @@ on:
       - ".github/workflows/02-ci.yml"
       - "Dockerfile"
 
-  # Allow a safe manual run before students trigger it with a code change.
   workflow_dispatch:
 
-  # Run every 5 minutes for demonstration purposes.
   schedule:
     - cron: "*/5 * * * *"
 
@@ -25,7 +22,6 @@ env:
 
 jobs:
   run-tests:
-    # The runner is the temporary machine that executes the steps below.
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -34,52 +30,43 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      # Download the repository onto the runner.
       - name: Check out repository
         uses: actions/checkout@v6
 
-      # Install the requested Python version.
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Install Ruff.
       - name: Install Ruff
         run: |
           python -m pip install --upgrade pip
           pip install ruff
 
-      # Lint the project.
       - name: Lint with Ruff
-        run: |
-          ruff check .
+        run: ruff check .
 
-      # Scan the repository filesystem.
       - name: Run Trivy Filesystem Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
-      # Scan the Dockerfile for misconfigurations.
       - name: Run Trivy Dockerfile Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: config
           scan-ref: Dockerfile
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
-      # Execute unit tests.
       - name: Run Tests
         run: python -m unittest discover -s tests -v
 
-      # Display some runner information.
       - name: Check Time, List Files and Verify Python
         run: |
           echo "=== Checking Runner System Time (UTC) ==="
@@ -91,12 +78,14 @@ jobs:
           echo "=== Listing Repository Files ==="
           ls -la
 
-      # Buildx is only available on Linux.
+      ####################################################################
+      # Docker steps (Ubuntu only)
+      ####################################################################
+
       - name: Set up Docker Buildx
         if: matrix.os == 'ubuntu-latest'
         uses: docker/setup-buildx-action@v3
 
-      # Build the Docker image.
       - name: Build Docker Image
         if: matrix.os == 'ubuntu-latest'
         uses: docker/build-push-action@v6
@@ -106,29 +95,28 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:latest
           load: true
 
-
-      # Save the Docker image as a tar archive.
-      - name: Save Docker Image
+      - name: Scan Docker Image with Trivy
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
-
-      # Scan the built image for vulnerabilities.
-      - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          input: ${{ env.IMAGE_TAR }}
+          image-ref: ${{ env.IMAGE_NAME }}:latest
           format: table
           output: trivy-report.txt
           exit-code: "0"
           ignore-unfixed: true
           severity: HIGH
 
-      # # Upload the Docker image as a workflow artifact.
-      # - name: Upload Docker Image Artifact
-      #   if: matrix.os == 'ubuntu-latest'
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: docker-image-${{ matrix.python-version }}
-      #     path: ${{ env.IMAGE_TAR }}
-      #     retention-days: 7
+      - name: Save Docker Image
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
+
+      - name: Upload Docker Image Artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.python-version }}
+          path: |
+            ${{ env.IMAGE_TAR }}
+            trivy-report.txt
+          retention-days: 7
