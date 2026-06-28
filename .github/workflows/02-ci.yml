@@ -1,28 +1,28 @@
 # This is the first real CI workflow in the course.
-# It verifies a change by running tests on a fresh runner.
+# It verifies a change by running tests, building a Docker image,
+# scanning it with Trivy, and publishing it as an artifact.
 name: 02 CI Workflow
 
 on:
-  # Run automatically when app code, tests, or this workflow file changes.
   push:
     paths:
       - "app/**"
       - "tests/**"
       - ".github/workflows/02-ci.yml"
       - "Dockerfile"
-  # Allow a safe manual run before students trigger it with a code change.
+
   workflow_dispatch:
-  
+
   schedule:
-    - cron: "*/5 * * * *"   
+    - cron: "*/5 * * * *"
+
+env:
+  IMAGE_NAME: tiny-health-app
+  IMAGE_TAR: tiny-health-app.tar
 
 jobs:
   run-tests:
-    # The runner is the temporary machine that executes the steps below.
     runs-on: ${{ matrix.os }}
-
-    # env:
-    #   PYTHON_VERSION: ${{ secrets.PYTHON_VERSION }}
 
     strategy:
       matrix:
@@ -31,11 +31,9 @@ jobs:
 
     steps:
       - name: Check out repository
-        # Download the repository contents onto the runner.
         uses: actions/checkout@v6
 
       - name: Set up Python
-        # Prepare Python on the runner. This does not change the student laptop.
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
@@ -46,41 +44,79 @@ jobs:
           pip install ruff
 
       - name: Lint with Ruff
-        run: |
-          ruff check .
+        run: ruff check .
 
-      # Trivy Filesystem Scan
-      - name: Run Trivy Filesystem
+      - name: Run Trivy Filesystem Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
-
-      # Trivy Dockerfile Scan
-      - name: Run Trivy Dockerfile
+      - name: Run Trivy Dockerfile Scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: config
-          scan-ref: "Dockerfile"
+          scan-ref: Dockerfile
           format: table
-          exit-code: 1
+          exit-code: "1"
           severity: CRITICAL
 
-      - name: Run tests
-        # This is the key verification step in the CI workflow.
+      - name: Run Tests
         run: python -m unittest discover -s tests -v
 
       - name: Check Time, List Files and Verify Python
         run: |
           echo "=== Checking Runner System Time (UTC) ==="
           date
-        
+
           echo "=== Checking Python Version ==="
           python --version
-        
+
           echo "=== Listing Repository Files ==="
           ls -la
+
+      ####################################################################
+      # Docker steps (Ubuntu only)
+      ####################################################################
+
+      - name: Set up Docker Buildx
+        if: matrix.os == 'ubuntu-latest'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        if: matrix.os == 'ubuntu-latest'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:latest
+          load: true
+
+      - name: Scan Docker Image with Trivy
+        if: matrix.os == 'ubuntu-latest'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:latest
+          format: table
+          output: trivy-report.txt
+          exit-code: "0"
+          ignore-unfixed: true
+          severity: HIGH
+
+      - name: Save Docker Image
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          docker save ${{ env.IMAGE_NAME }}:latest -o ${{ env.IMAGE_TAR }}
+
+      - name: Upload Docker Image Artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.python-version }}
+          path: |
+            ${{ env.IMAGE_TAR }}
+            trivy-report.txt
+          retention-days: 7
